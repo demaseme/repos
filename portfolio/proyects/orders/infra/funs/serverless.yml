@@ -16,15 +16,21 @@ provider:
           Action:
             - 'events:PutEvents'
           Resource: '*'
+        - Effect: 'Allow'
+          Action:   
+            - 'dynamoDb:PutItem'
+          Resource: '*'
   
 package: 
   individually: true
 functions:
   orderPublisher:
-    handler: orders/orderPublisher.handler
+    handler: orders.orderPublisher.handler
     description: function description
     architecture: arm64
     runtime: python3.8
+    environment:
+      ORDERS_DYN_TABLE: 'orders-table'
     events:
       - httpApi:
           method: POST

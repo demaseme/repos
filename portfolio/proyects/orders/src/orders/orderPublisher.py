@@ -1,19 +1,25 @@
-import json
-import boto3
 import uuid
+from .EventBridgeClient_OrderInitiator import EventBridgeClient_OrderInitiator
+from .DynamoDbClient_Orders import DynamoDBClient_Orders
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.logging import correlation_paths
 
-eventClient = boto3.client('events')
+ebclient_order = EventBridgeClient_OrderInitiator()
+dynclient_order = DynamoDBClient_Orders()
+logger = Logger(service=__name__)
 
+@logger.inject_lambda_context(correlation_id_path=correlation_paths.LAMBDA_FUNCTION_URL, log_event=True)
 def handler(event, context):
-    orderId = uuid.uuid4()
+    orderId = str(uuid.uuid4())
     detailJsonString = f'{{"OrderId": "{orderId}"}}'
     print(detailJsonString)
-    response = eventClient.put_events(Entries=[{ 
-        'Source': 'order.publisher',
-        'DetailType':'order-data',
-        'Detail': detailJsonString,
-        'EventBusName':'OrdersEventBus'
-            }]
-    )
-    print(response)
-    return response
+    putOrderItem(orderId)
+    putOrderEvent(detailJsonString)
+    return 0
+
+def putOrderEvent(orderJson):
+    resp = ebclient_order.putOrderEvent(orderJson)
+    logger.info(f'put_event result:{resp}')
+
+def putOrderItem(orderId:str):
+    dynclient_order.putNewOrder(orderId)

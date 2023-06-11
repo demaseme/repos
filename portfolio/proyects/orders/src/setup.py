@@ -15,7 +15,7 @@ URL = ''
 REQUIRES_PYTHON = '>=3.8.0'
 VERSION = '1.0.0'
 REQUIRED= [
-     'botocore', 'aws-lambda-powertools'
+     'botocore', 'aws-lambda-powertools', 'mypy-boto3-events', 'boto3-stubs', 'boto3-stubs[events]'
 ]
 EXTRAS = {}
 
